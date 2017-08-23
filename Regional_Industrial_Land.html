@@ -1,0 +1,232 @@
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+    <title>welcome to the (complicated) map zone</title>
+
+<style>
+    
+    #title {
+        left: 45%;
+        margin-top: 30px;
+        position: relative;
+        font-size: 30;
+    }
+    
+    #map {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+    
+    #dropdown_base  {
+        top: 85px;
+	    left: 75px;
+	    position: absolute;
+        
+    }
+    
+    #dropdown_overlay  {
+        top: 50px;
+	    left: 75px;
+	    position: absolute;
+        
+    }
+    
+    #rail-toggle {
+        top:30px;
+        right:4px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+    <!--<h1 id='title'> welcome to the (tricky) map zone</h1> -->
+    
+    <div id="map"></div>
+    
+    <div id="dropdown_base">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Select Base Layer
+    <span class="caret"></span>
+  </button>
+        <ul class="dropdown-menu scrollable-menu" id="layer-selector" aria-labelledby="dropdownMenuDivider">
+      
+      <li value="indzones">
+      <a href="#">Industrial Zones</a></li>
+            
+      <li value="conflictregions">
+      <a href="#">Conflict Regions</a></li>
+        
+      <li value="pda">
+      <a href="#">Priority Development Areas</a></li>
+            
+      <li value="vacant">
+      <a href="#">Vacant Parcels</a></li>
+            
+      <li value="potentialdensity">
+      <a href="#">Potential Density</a></li>
+            
+      <li value="base_off">
+      <a href="#">Disable Base Layer</a></li>
+      
+	</ul>
+    </div>
+    
+    <div id="dropdown_overlay">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Select Overlay
+    <span class="caret"></span>
+  </button>
+        <ul class="dropdown-menu scrollable-menu" id="layer-selector" aria-labelledby="dropdownMenuDivider">
+        
+      <li value="pda_outline">
+      <a href="#">Priority Development Areas (outline)</a></li>
+            
+      <li value="indzones_outline">
+      <a href="#">Industrial Zones (outline)</a></li>
+        
+      <li value="overlay_off">
+      <a href="#">Disable Overlay layers</a></li>
+      
+	</ul>
+    </div>
+    
+<script>
+
+   window.onload = function() {
+    var vizjson = 'https://cci-shared-account.carto.com/api/v2/viz/d1a31e5e-8690-11e6-bea0-0e3ff518bd15/viz.json';
+
+    // Choose center and zoom level
+    var options = {
+        center: [37.75, -122.4], // San Francisco
+        zoom: 11
+    }
+
+    // Instantiate map on specified DOM element
+    var map_object = new L.Map('map', options);
+
+    // Add a basemap to the map object just created
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+        attribution: 'Stamen'
+    }).addTo(map_object);
+
+    // Add CartoDB data layers
+    var layer_options = {
+        layerIndex: 1
+    }
+    cartodb.createLayer(map_object,vizjson, layer_options)
+        .addTo(map_object)
+        .done(function(layer) {
+            
+            // log # of sublayers    
+            console.log("# of layers = ", layer.getSubLayerCount())
+        
+            // create individual variables for each sublayer
+            sublayer0 = layer.getSubLayer(0); // Industrial Zones
+            sublayer1 = layer.getSubLayer(1); // Conflict Regions
+            sublayer2 = layer.getSubLayer(2); // Priority Development Areas
+            sublayer3 = layer.getSubLayer(3); // PDA Outlines
+            sublayer4 = layer.getSubLayer(4); // Ind Zone Outlines
+            sublayer5 = layer.getSubLayer(5); // Potential Density
+            sublayer6 = layer.getSubLayer(6); // Vacant Parcels
+            sublayer7 = layer.getSubLayer(7); // indzones_bayarea_dissolved_clipped
+        
+            // hide all but one sublayer
+            sublayer0.hide();
+            sublayer1.hide();
+            sublayer2.hide();
+            sublayer3.hide();
+            sublayer4.hide();
+            sublayer5.hide();
+            sublayer6.hide();
+            sublayer7.hide();
+            
+        
+            $("#load_3").on('click', function() { 
+            // turn on layer off, turn off layer on
+            sublayer0.toggle();
+            sublayer1.toggle();
+    });
+})
+.error(function(err) { // when error, do this
+    console.log("error: " + err);
+});
+}
+   
+$('#layer-selector li').click(function() {
+	var status = $(this).attr('value');
+    console.log(status)
+	if (status == "indzones") {
+		sublayer0.show();
+        sublayer1.hide();
+        sublayer2.hide();
+        sublayer5.hide();
+        sublayer6.hide();
+	}
+	else if (status == "conflictregions") {
+		sublayer0.hide();
+        sublayer1.show();
+        sublayer2.hide();
+        sublayer5.hide()
+        sublayer6.hide();
+
+	}
+	else if (status == "pda") {
+		sublayer0.hide();
+        sublayer1.hide();
+        sublayer2.show();
+        sublayer5.hide()
+        sublayer6.hide();
+	}
+	else if (status == 'vacant') {
+		sublayer0.hide();
+        sublayer1.hide();
+        sublayer2.hide();
+        sublayer5.hide();
+        sublayer6.show();
+	}
+    else if (status == 'potentialdensity') {
+		sublayer0.hide();
+        sublayer1.hide();
+        sublayer2.hide();
+        sublayer5.show();
+        sublayer6.hide();
+	}
+    else if (status == 'pda_outline') {
+		sublayer3.show();
+        sublayer4.hide();
+	}
+    else if (status == 'indzones_outline') {
+		sublayer3.hide();
+        sublayer4.show();
+	}
+    else if (status == 'base_off') {
+		sublayer0.hide();
+        sublayer1.hide();
+        sublayer2.hide();
+        sublayer5.hide();
+        sublayer6.hide();
+	}
+    else if (status == 'overlay_off') {
+		sublayer3.hide();
+        sublayer4.hide();
+	}
+});
+    
+    
+</script>
+
+</body>
+
+</html>
