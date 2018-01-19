@@ -1,4 +1,6 @@
 
+
+
 <html>
 
 <head>
@@ -9,8 +11,16 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 
+    <title>Planning For Jobs</title>
+
 <style>
-   
+    
+    #title {
+        left: 45%;
+        margin-top: 30px;
+        position: relative;
+        font-size: 30;
+    }
     
     #map {
         width: 100%;
@@ -19,17 +29,29 @@
     }
     
     #dropdown_base  {
-        top: 85px;
+        top: 50px;
 	    left: 75px;
 	    position: absolute;
         
     }
     
     #dropdown_overlay  {
-        top: 50px;
+        top: 85px;
 	    left: 75px;
 	    position: absolute;
         
+    }
+    
+    #other_layer_loader  {
+        top: 120px;
+	    left: 75px;
+	    position: absolute;
+        
+    }
+    
+    #map_selector {
+        top: 10px;
+        left: 10px;
     }
     
     #rail-toggle {
@@ -37,6 +59,21 @@
         right:4px;
     }
 	
+    #category {
+        left: 15px;
+    }
+    
+    #test_legend {
+        right:10px
+    }
+    
+    .overlay {
+        position: absolute;
+        right: 20px;
+        width: 225px;
+        top: 10px;
+        height: 40px;
+    }
 
 </style>
 
@@ -53,6 +90,8 @@
   </button>
         <ul class="dropdown-menu scrollable-menu" id="layer-selector" aria-labelledby="dropdownMenuDivider">
       
+      <!--<li id="category"><b>Industrial Land</b></li>-->
+            
       <li value="indzones">
       <a href="#">Industrial Zones</a></li>
             
@@ -62,17 +101,62 @@
       <li value="pda">
       <a href="#">Priority Development Areas</a></li>
             
+      <!-- removed 1/11/2018 per Karen's instruction -->
+            
+      <!--
       <li value="vacant">
       <a href="#">Vacant Parcels</a></li>
+      -->
             
-      <li value="potentialdensity">
-      <a href="#">Potential Density</a></li>
+      <!--<li value="potentialdensity">
+      <a href="#">Potential Density</a></li>-->
+    
+      <li value="emp11">
+      <a href="#">Potential Dispaced Jobs</a></li>
+        
+      <li value="sealevel">
+      <a href="#">Sea Level Rise</a></li>
+       
+      <li role="separator" class="divider"></li>
             
+      <!--<li id="category"><b>Employment Trends</b></li>-->
+    
+      <li value="employment_2011">
+      <a href="#">Employment (2011)</a></li>
+            
+      <li value="employment_2040">
+      <a href="#">Employment (2040)</a></li>
+    
+      <li value="change_in_employment">
+      <a href="#">Change in Employment (2011-2040)</a></li>
+    
+      <li role="separator" class="divider"></li>
+            
+      <!--<li id="category"><b>Worker Home Location</b></li>-->
+    
+      <!--
+      <li value="whl_ratio">
+      <a href="#">Worker Home Location - Ratio</a></li>
+       -->
+    
+      <li value="whl_jobs_lt3333">
+      <a href="#">Worker Home Location - Jobs less than $3,333/mo</a></li>
+            
+      <li value="whl_jobs_gt3333">
+      <a href="#">Worker Home Location - Jobs greater than $3,333/mo</a></li>
+    
+      <li value="whl_worker_home">
+      <a href="#">Worker Home Location - Worker Home</a></li>
+      
+      <!--    
       <li value="base_off">
       <a href="#">Disable Base Layer</a></li>
-      
+      -->
+
+
 	</ul>
     </div>
+    
     
     <div id="dropdown_overlay">
     <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -81,22 +165,59 @@
   </button>
         <ul class="dropdown-menu scrollable-menu" id="layer-selector" aria-labelledby="dropdownMenuDivider">
         
-      <li value="pda_outline">
+      <li value="pda_outline" overlay-value="pda_outline">
       <a href="#">Priority Development Areas (outline)</a></li>
             
-      <li value="indzones_outline">
+      <li value="indzones_outline" overlay-value="indzones_outline">
       <a href="#">Industrial Zones (outline)</a></li>
         
-      <li value="overlay_off">
+      <li role="separator" class="divider"></li>
+            
+      <li value="overlay_off" overlay-value="overlay_off">
       <a href="#">Disable Overlay layers</a></li>
       
 	</ul>
     </div>
+    <div id="test_legend"></div>
+
+    <!--
+    <div id="other_layer_loader">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Other layer loader
+    <span class="caret"></span>
+  </button>
+        <ul class="dropdown-menu scrollable-menu" id="layer-selector" aria-labelledby="dropdownMenuDivider">
+        
+      <li value="other_layer">
+      <a href="#">Other Layer</a></li>
+        
+      <li value="no_other_layer">
+      <a href="#">No Other Layer</a></li>
+      
+	</ul>
+    </div>
+    -->
+    
     
 <script>
 
    window.onload = function() {
-    var vizjson = 'https://cci-shared-account.carto.com/api/v2/viz/d1a31e5e-8690-11e6-bea0-0e3ff518bd15/viz.json';
+       
+    // link to IL Map -- emp11 data
+    // https://cci-shared-account.carto.com/viz/d39f0ef6-ad40-4855-81ac-af5f448e9032/map
+    var il_map_emp11 = 'https://cci-shared-account.carto.com/api/v2/viz/d39f0ef6-ad40-4855-81ac-af5f448e9032/viz.json';
+       
+    // link to IL Combined Map
+    // https://cci-shared-account.carto.com/viz/57ebb5e8-e294-11e6-9633-0e3ebc282e83/map
+    var employment_trends = 'https://cci-shared-account.carto.com/api/v2/viz/57ebb5e8-e294-11e6-9633-0e3ebc282e83/viz.json';
+    
+    // link to IL Map 2: IL Worker Home Location
+    // https://cci-shared-account.carto.com/viz/90e717cc-c898-11e6-acb8-0e3ff518bd15/map
+    var worker_home_location = 'https://cci-shared-account.carto.com/api/v2/viz/90e717cc-c898-11e6-acb8-0e3ff518bd15/viz.json';
+       
+    // link to IL Map 1: Regional Industrial Land + Jobs
+    // https://cci-shared-account.carto.com/viz/d1a31e5e-8690-11e6-bea0-0e3ff518bd15/map
+    var industrial_land = 'https://cci-shared-account.carto.com/api/v2/viz/d1a31e5e-8690-11e6-bea0-0e3ff518bd15/viz.json';
 
     // Choose center and zoom level
     var options = {
@@ -109,109 +230,574 @@
 
     // Add a basemap to the map object just created
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-        attribution: 'Stamen'
+        attribution: 'Carto'
     }).addTo(map_object);
 
     // Add CartoDB data layers
     var layer_options = {
-        layerIndex: 1
+        layerIndex: 1,
+        legend: true
     }
-    cartodb.createLayer(map_object,vizjson, layer_options)
+
+// load layers from another carto map
+       
+    cartodb.createLayer(map_object,il_map_emp11, {legends:true})
         .addTo(map_object)
         .done(function(layer) {
             
             // log # of sublayers    
-            console.log("# of layers = ", layer.getSubLayerCount())
+            console.log("# of layers in il_map_emp11 map= ", layer.getSubLayerCount())
         
             // create individual variables for each sublayer
-            sublayer0 = layer.getSubLayer(0); // Industrial Zones
-            sublayer1 = layer.getSubLayer(1); // Conflict Regions
-            sublayer2 = layer.getSubLayer(2); // Priority Development Areas
-            sublayer3 = layer.getSubLayer(3); // PDA Outlines
-            sublayer4 = layer.getSubLayer(4); // Ind Zone Outlines
-            sublayer5 = layer.getSubLayer(5); // Potential Density
-            sublayer6 = layer.getSubLayer(6); // Vacant Parcels
-            sublayer7 = layer.getSubLayer(7); // indzones_bayarea_dissolved_clipped
-        
-            // hide all but one sublayer
-            sublayer0.hide();
-            sublayer1.hide();
-            sublayer2.hide();
-            sublayer3.hide();
-            sublayer4.hide();
-            sublayer5.hide();
-            sublayer6.hide();
-            sublayer7.hide();
+            emp11 = layer.getSubLayer(0); // Potential Jobs Lost
+            sea_level = layer.getSubLayer(1); // 6' Sea Level Rise
+            // sublayer2_1 = layer.getSubLayer(1); // Industrial Zones
             
+            // hide all but one sublayer
+            emp11.hide();
+            sea_level.hide();
+            // sublayer2_1.hide();
         
             $("#load_3").on('click', function() { 
             // turn on layer off, turn off layer on
-            sublayer0.toggle();
-            sublayer1.toggle();
+            sublayer2_0.toggle();
+            sublayer2_1.toggle();
     });
 })
 .error(function(err) { // when error, do this
     console.log("error: " + err);
 });
+
+    cartodb.createLayer(map_object,worker_home_location, {legends:true})
+        .addTo(map_object)
+        .done(function(layer) {
+            
+            // log # of sublayers    
+            console.log("# of layers in worker_home_location map= ", layer.getSubLayerCount())
+            // 4
+        
+            // create individual variables for each sublayer
+            whl_ratio = layer.getSubLayer(0);
+            whl_jobs_lt3333 = layer.getSubLayer(1);
+            whl_jobs_gt3333 = layer.getSubLayer(2);
+            whl_worker_home = layer.getSubLayer(3);
+            
+            // hide all but one sublayer
+            whl_ratio.hide();
+            whl_jobs_lt3333.hide();
+            whl_jobs_gt3333.hide();
+            whl_worker_home.hide();
+        
+            $("#load_3").on('click', function() { 
+            // turn on layer off, turn off layer on
+            whl_ratio.toggle();
+            whl_jobs_lt3333.toggle();
+    });
+})
+.error(function(err) { // when error, do this
+    console.log("error: " + err);
+});
+       
+    cartodb.createLayer(map_object,employment_trends, {legends:true})
+        .addTo(map_object)
+        .done(function(layer) {
+            
+            // log # of sublayers    
+            console.log("# of layers in employment_trends map= ", layer.getSubLayerCount())
+            // 6 layers
+        
+            // create individual variables for each sublayer
+            worker_jobs_gt3333 = layer.getSubLayer(0);
+            worker_overall = layer.getSubLayer(1);
+            employment_2011 = layer.getSubLayer(2);
+            employment_2040 = layer.getSubLayer(3);
+            change_in_employment = layer.getSubLayer(4);
+            rail = layer.getSubLayer(5);
+            
+            // hide all but one sublayer
+            worker_jobs_gt3333.hide();
+            worker_overall.hide();
+            employment_2011.hide();
+            employment_2040.hide();
+            change_in_employment.hide();
+            rail.hide();
+        
+            $("#load_3").on('click', function() { 
+            // turn on layer off, turn off layer on
+            sublayer2_0.toggle();
+            sublayer2_1.toggle();
+    });
+})
+.error(function(err) { // when error, do this
+    console.log("error: " + err);
+});
+       
+    cartodb.createLayer(map_object,industrial_land, {legends:true})
+        .addTo(map_object)
+        .done(function(layer) {
+            
+            // log legends status
+            console.log('legends active :'+ layer.options.legends);
+        
+            // log # of sublayers    
+            console.log("# of layers in industrial_land map = ", layer.getSubLayerCount())
+        
+            // create individual variables for each sublayer
+            indzones = layer.getSubLayer(0); // Industrial Zones
+            conflictregions = layer.getSubLayer(1); // Conflict Regions
+            pda = layer.getSubLayer(2); // Priority Development Areas
+            potentialdensity = layer.getSubLayer(3); // Potential Density
+            vacantparcels = layer.getSubLayer(4); // Vacant Parcels
+            indzonesbayareadissolved = layer.getSubLayer(5); //
+            indzones_outlines = layer.getSubLayer(6); // Ind Zone Outlines
+            pda_outlines = layer.getSubLayer(7); // PDA Outlines
+            //indzones_bayarea_dissolved_clipped
+        
+            // hide all but one sublayer
+            indzones.hide();
+            conflictregions.hide();
+            pda.hide();
+            pda_outlines.hide();
+            indzones_outlines.hide();
+            potentialdensity.hide();
+            vacantparcels.hide();
+            indzonesbayareadissolved.hide();
+            
+        
+            $("#load_3").on('click', function() { 
+            // turn on layer off, turn off layer on
+            indzones.toggle();
+            conflictregions.toggle();
+    });
+})
+.error(function(err) { // when error, do this
+    console.log("error: " + err);
+});
+       
 }
    
 $('#layer-selector li').click(function() {
 	var status = $(this).attr('value');
+    var overlay_status = $(this).attr('overlay-value')
     console.log(status)
 	if (status == "indzones") {
-		sublayer0.show();
-        sublayer1.hide();
-        sublayer2.hide();
-        sublayer5.hide();
-        sublayer6.hide();
+		indzones.show();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+     
+    $('div.cartodb-legend.choropleth').remove();
+    $('div.cartodb-legend.category').remove();
+    $('div.cartodb-legend.custom.base').remove();
+    {
+      $('body').append('<div class="cartodb-legend category"><div class="legend-title">Industrial Zones</div><ul><li><div class="bullet" style="background: #e31a1c"></div> MU-commercial</li><li><div class="bullet" style="background: #FFCC00"></div> MU-residential</li><li><div class="bullet" style="background: #FFFFFF"></div> N/A</li><li><div class="bullet" style="background: #FFFFFF"></div> ag</li><li><div class="bullet" style="background: #6B0FB2"></div> heavy</li><li><div class="bullet" style="background: #cab2d6"></div> light</li><li><div class="bullet" style="background: #a3763d"></div> light-office</li><li><div class="bullet" style="background: #A53ED5"></div> medium</li><li><div class="bullet" style="background: #a3763d"></div> medium-office</li><li><div class="bullet" style="background: #80af72"></div> transp</li><li><div class="bullet" style="background: #FFFFFF"></div> Others</li></ul></div>');
+    };
+        
 	}
 	else if (status == "conflictregions") {
-		sublayer0.hide();
-        sublayer1.show();
-        sublayer2.hide();
-        sublayer5.hide()
-        sublayer6.hide();
-
+        
+        indzones.hide();
+        conflictregions.show();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+         
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend custom base"><ul><li><div class="bullet" style="background:#B81609"></div>Conflict Region</li></ul></div>');
 	}
 	else if (status == "pda") {
-		sublayer0.hide();
-        sublayer1.hide();
-        sublayer2.show();
-        sublayer5.hide()
-        sublayer6.hide();
+        
+        indzones.hide();
+        conflictregions.hide();
+        pda.show();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend custom base"><ul><li><div class="bullet" style="background:#229A00"></div>Priority Development Area</li></ul></div>');
 	}
 	else if (status == 'vacant') {
-		sublayer0.hide();
-        sublayer1.hide();
-        sublayer2.hide();
-        sublayer5.hide();
-        sublayer6.show();
+		indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.show();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend custom base"><ul><li><div class="bullet" style="background:#000000"></div>Vacant Parcels</li></ul></div>');
 	}
     else if (status == 'potentialdensity') {
-		sublayer0.hide();
-        sublayer1.hide();
-        sublayer2.hide();
-        sublayer5.show();
-        sublayer6.hide();
+		indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.show();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Potential Density</div><ul><li class="min">1.92</li><li class="max">1580.00</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
 	}
+    
+    else if (status == 'emp11') {
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.show();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Potential Jobs Displaced</div><ul><li class="min">16</li><li class="max">9840</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
+    }
+    
+    else if (status == 'sealevel'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.show();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend custom base"><ul><li><div class="bullet" style="background:#5CA2D1"></div>Sea Level Rise (6 ft)</li</ul></div>');
+    }
+    
+    else if (status == 'employment_2011'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.show();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend category"><div class="legend-title">Employment 2011 (number of workers)</div><ul><li><div class="bullet" style="background: #ffffb2"></div>0-19</li><li><div class="bullet" style="background: #fecc5c"></div>20-49</li><li><div class="bullet" style="background: #fd8d3c"></div> 50-99</li><li><div class="bullet" style="background: #f03b20"></div> 100-499</li><li><div class="bullet" style="background: #bd0026"></div>500+</li></ul></div>');
+    }
+    
+    else if (status == 'employment_2040'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.show();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend category"><div class="legend-title">Employment 2040 (number of workers)</div><ul><li><div class="bullet" style="background: #ffffb2"></div>0-19</li><li><div class="bullet" style="background: #fecc5c"></div>20-49</li><li><div class="bullet" style="background: #fd8d3c"></div> 50-99</li><li><div class="bullet" style="background: #f03b20"></div> 100-499</li><li><div class="bullet" style="background: #bd0026"></div>500+</li></ul></div>');
+    }
+    
+    else if (status == 'workers_jobs_gt3333'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.show();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Workers making more than $3,333/mo</div><ul><li class="min">105</li><li class="max">2832</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
+    }
+    
+    else if (status == 'change_in_employment'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.show();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Change in Employment (2011-2040)</div><ul><li class="min">-37.51</li><li class="max">2404.09</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFCC"></div><div class="quartile" style="background-color:#C7E9B4"></div><div class="quartile" style="background-color:#7FCDBB"></div><div class="quartile" style="background-color:#41B6C4"></div><div class="quartile" style="background-color:#1D91C0"></div><div class="quartile" style="background-color:#225EA8"></div><div class="quartile" style="background-color:#0C2C84"></div></div></li></ul></div>');
+    }
+    
+    else if (status == 'whl_ratio'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.show();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Ratio Low:Mid/High Income Workers</div><ul><li class="min">0.53</li><li class="max">5.62</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
+    }
+    
+    else if (status == 'whl_jobs_lt3333') {
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.show();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Ind Workers Making &lt;$3,333/Month</div><ul><li class="min">69</li><li class="max">705</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
+    }
+    
+    else if (status == 'whl_jobs_gt3333'){
+      indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.show();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Ind Workers Making &gt;$3,333/month</div><ul><li class="min">105</li><li class="max">2832</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
+    }
+    
+    else if (status == 'whl_worker_home'){
+        indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        sea_level.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.show();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
+        $('body').append('<div class="cartodb-legend choropleth"><div class="legend-title">Industrial Workers in Residence</div><ul><li class="min">159</li><li class="max">3291</li><li class="graph count_441"><div class="colors"><div class="quartile" style="background-color:#FFFFB2"></div><div class="quartile" style="background-color:#FED976"></div><div class="quartile" style="background-color:#FEB24C"></div><div class="quartile" style="background-color:#FD8D3C"></div><div class="quartile" style="background-color:#FC4E2A"></div><div class="quartile" style="background-color:#E31A1C"></div><div class="quartile" style="background-color:#B10026"></div></div></li></ul></div>');
+    }
+    
     else if (status == 'pda_outline') {
-		sublayer3.show();
-        sublayer4.hide();
+		pda_outlines.show();
+        indzones_outlines.hide();
+        
+        $('div.cartodb-legend.custom.overlay').remove();
+        $('body').append('<div class="cartodb-legend custom overlay"><ul><li><div class="bullet" style="background:#000000"></div>Priority Development Area</li></ul></div>')
+           
 	}
     else if (status == 'indzones_outline') {
-		sublayer3.hide();
-        sublayer4.show();
+		pda_outlines.hide();
+        indzones_outlines.show();
+        
+        $('div.cartodb-legend.custom.overlay').remove();
+        $('body').append('<div class="cartodb-legend custom overlay"><ul><li><div class="bullet" style="background:#000000"></div>Industrial Zones</li></ul></div>')
 	}
     else if (status == 'base_off') {
-		sublayer0.hide();
-        sublayer1.hide();
-        sublayer2.hide();
-        sublayer5.hide();
-        sublayer6.hide();
+		indzones.hide();
+        conflictregions.hide();
+        pda.hide();
+        potentialdensity.hide();
+        vacantparcels.hide();
+        worker_jobs_gt3333.hide();
+        worker_overall.hide();
+        employment_2011.hide();
+        employment_2040.hide();
+        change_in_employment.hide();
+        rail.hide();
+        emp11.hide();
+        whl_ratio.hide();
+        whl_jobs_lt3333.hide();
+        whl_jobs_gt3333.hide();
+        whl_worker_home.hide();
+        
+        $('div.cartodb-legend.choropleth').remove();
+        $('div.cartodb-legend.category').remove();
+        $('div.cartodb-legend.custom.base').remove();
 	}
     else if (status == 'overlay_off') {
-		sublayer3.hide();
-        sublayer4.hide();
+		pda_outlines.hide();
+        indzones_outlines.hide();
+        $('div.cartodb-legend.custom.overlay').remove();
 	}
 });
     
